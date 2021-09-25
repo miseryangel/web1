@@ -1,4 +1,4 @@
-import { AVLNode, RedBlackNode } from './node';
+import { TreeNode, AVLNode, RedBlackNode, SegmentNode, TrieNode, BNode } from './node';
 
 export const LEFT = Symbol('left');
 export const RIGHT = Symbol('right');
@@ -95,7 +95,6 @@ export class AVLTree extends Tree<AVLNode>{
                 break;
             case 2:
                 // link between nodeB and parent of nodeA
-                console.log(2);
                 nodeB.parent = nodeA.parent;
                 nodeB.parentSide = nodeA.parentSide;
                 if (nodeB.parent !== null){
@@ -228,3 +227,257 @@ export class RedBlackTree extends Tree<RedBlackNode>{
 }
 
 
+export class SegmentTree extends Tree<SegmentNode>{
+    data:number[];
+    len:number;
+    constructor(data:number[],len:number){
+        super();
+        this.data = data;
+        this.len = len;
+        this.root = this.generator(data,0,len-1);
+    }
+    generator(data:number[], l: number, r: number):SegmentNode{
+        if (l === r){
+            return new SegmentNode(data[l],null,ROOT,{low:l,up:l});
+        }
+        const mid = l+Math.floor((r-l)/2);
+        const left = this.generator(data,l,mid), right = this.generator(data,mid+1,r);
+        const cur = new SegmentNode(left.val+right.val,null,ROOT,{low:l,up:l});
+        left.parent = cur;
+        left.parentSide = LEFT;
+        right.parent = cur;
+        right.parentSide = RIGHT;
+        cur.left = left;
+        cur.right = right;
+        return cur;
+    }
+    update(Node:SegmentNode|null){
+        if (Node === null) return;
+        const lVal = Node.left === null?0:Node.left.val, rVal = Node.right === null?0:Node.right.val;
+        Node.val = lVal + rVal;
+    }
+    changeVal(idx:number,val:number):SegmentNode{
+        this.data[idx] = val;
+        let cur = this.root;
+        while (cur!.span.low !== cur!.span.up){
+            if (cur!.left !== null && cur!.left.span.up >= idx ){
+                cur = cur!.left;
+            }else{
+                cur = cur!.right;
+            }
+        }
+        cur!.val = val;
+        return cur!;
+    }
+}
+
+export class SplayTree extends Tree<TreeNode>{
+
+    splay(Node:TreeNode){
+        // root
+        if (Node.parent === null){
+            this.root = Node;
+            return;
+        } 
+        // child of root
+        if (Node.parent.parent === null){
+            const Root = Node.parent;
+            if (Node.parentSide === LEFT){
+                Root.left = Node.right;
+                if (Root.left !== null){
+                    Root.left.parent = Root;
+                    Root.left.parentSide = LEFT;
+                }
+                Node.right = Root;
+                Root.parentSide = RIGHT;
+            }else{
+                Root.right = Node.left;
+                if (Root.right !== null){
+                    Root.right.parent = Root;
+                    Root.right.parentSide = RIGHT;
+                }
+                Node.left = Root;
+                Root.parentSide = LEFT;
+            }
+            Root.parent = Node;
+            Node.parent = null;
+            Node.parentSide = ROOT;
+            this.root = Node;
+            return;
+        }
+        const parent = Node.parent, grandparent = Node.parent.parent;
+        const nodeDir = Node.parentSide, parentDir = parent.parentSide;
+        // link between node to great grandparent
+        Node.parent = grandparent.parent;
+        Node.parentSide = grandparent.parentSide;
+        if (Node.parent !== null){
+            Node.parentSide === LEFT?Node.parent.left = Node:Node.parent.right = Node;
+        }
+        if (nodeDir === parentDir){
+            if (nodeDir === LEFT){
+                // link between parent and child of Node
+                parent.left = Node.right;
+                if (parent.left !== null){
+                    parent.left.parent = parent;
+                    parent.left.parentSide = LEFT;
+                }
+                // link between grandparent and child of parent
+                grandparent.left = parent.right;
+                if (grandparent.left !== null){
+                    grandparent.left.parent = grandparent;
+                    grandparent.left.parentSide = LEFT;
+                }
+                Node.right = parent;
+                parent.parentSide = RIGHT;
+                parent.right = grandparent;
+                grandparent.parentSide = RIGHT;
+            }else{
+                // link between parent and child of Node
+                parent.right = Node.left;
+                if (parent.right !== null){
+                    parent.right.parent = parent;
+                    parent.right.parentSide = RIGHT;
+                }
+                // link between grandparent and child of parent
+                grandparent.right = parent.left;
+                if (grandparent.right !== null){
+                    grandparent.right.parent = grandparent;
+                    grandparent.right.parentSide = RIGHT;
+                }
+                Node.left = parent;
+                parent.parentSide = LEFT;
+                parent.left = grandparent;
+                grandparent.parentSide = LEFT;
+            }
+            // reverse link between parent and grandparent
+            grandparent.parent = parent;
+            parent.parent = Node;
+        }else{
+            if (nodeDir === RIGHT){
+                grandparent.left = Node.right;
+                if (grandparent.left !== null){
+                    grandparent.left.parent = grandparent;
+                    grandparent.left.parentSide = LEFT;
+                }
+                parent.right = Node.left;
+                if (parent.right !== null){
+                    parent.right.parent = parent;
+                    parent.right.parentSide = RIGHT;
+                }
+                Node.left = parent;
+                Node.right = grandparent;
+                grandparent.parentSide = RIGHT;
+            }else{
+                grandparent.right = Node.left;
+                if (grandparent.right !== null){
+                    grandparent.right.parent = grandparent;
+                    grandparent.right.parentSide = RIGHT;
+                }
+                parent.left = Node.right;
+                if (parent.left !== null){
+                    parent.left.parent = parent;
+                    parent.left.parentSide = LEFT;
+                }
+                Node.right = parent;
+                Node.left = grandparent;
+                grandparent.parentSide = LEFT;
+            }
+            parent.parent = Node;
+            grandparent.parent = Node;
+        }
+        this.splay(Node);
+    }
+
+    delete(Node:TreeNode){
+        this.splay(Node);
+        if (Node.left === null && Node.right === null){
+            this.root = null;
+        }else if (Node.left === null){
+            this.root = Node.right;
+            this.root!.parent = null;
+            this.root!.parentSide = ROOT;
+        }else{
+            const right = Node.right, left = Node.left, leftMax = this.findMax(left);
+            Node.left.parent = null;
+            Node.left.parentSide = ROOT;
+            this.root = Node.left;
+            this.splay(leftMax);
+            leftMax.right = right;
+            if (right !== null) right.parent = leftMax;
+        }
+    }
+
+    private findMax(Node:TreeNode){
+        if (Node.right !== null){
+            Node = Node.right;
+        }
+        return Node;
+    }
+}
+
+export class TrieTree<TrieNode>{
+    root:TrieNode;
+    nodes:number[];
+    constructor(root:TrieNode){
+        this.root = root;
+        this.nodes = new Array(7).fill(0);
+    }
+}
+
+export class BTree extends Tree<BNode>{
+    Order:number;
+    constructor(Order:number){
+        super();
+        this.Order = Order;
+    }
+
+    split(Node:BNode){
+        // no further split
+        if (Node.keys.length < this.Order){
+            return;
+        }
+        // indices probably not right; wait for fixes
+        const children:BNode[] = Node.children, keys:number[] = Node.keys, isLeaf = Node.isLeaf, parent = Node.parent, id = Node.id;
+        const breakPoint = Math.floor(this.Order/2)-1, bpKey = keys[breakPoint], leftKeys = keys.slice(0,breakPoint), rightKeys = keys.slice(breakPoint+1,this.Order-1);
+        const leftChildren = children.slice(0,breakPoint), rightChildren = children.slice(breakPoint,this.Order);
+        const left = new BNode(), right = new BNode();
+        left.keys = leftKeys;
+        right.keys = rightKeys;
+        if (!isLeaf){
+            left.isLeaf = false;
+            right.isLeaf = false;
+        }
+        left.children = leftChildren;
+        right.children = rightChildren;
+        // if split root
+        if (parent === null){
+            const root = new BNode();
+            this.root = root;
+            root.isLeaf = false;
+            root.keys = [bpKey];
+            root.children = [left,right];
+            left.parent = root;
+            right.parent = root;
+            return;
+        }else{
+            // need to identify the node pointer and replace it with two maybe assign an id attribute
+            let idx = 0;
+            for (let i = 0; i < parent.children.length; i++){
+                if (parent.children[i].id === id){
+                    idx = i;
+                    break;
+                }
+            }
+            left.parent = parent;
+            right.parent = parent;
+            // tired gonna jot down and proof read later
+            parent.keys = parent.keys.splice(idx,0,bpKey);
+            parent.children = parent.children.splice(idx,1,left,right);
+            this.split(parent);
+        }
+    }
+    // gonna fix it later 
+    delete(Node:BNode,val:number){
+        
+    }
+}
