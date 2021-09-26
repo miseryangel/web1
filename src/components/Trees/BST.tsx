@@ -3,7 +3,7 @@ import { Tree } from "../../slices/bricks/tree";
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { useEffect } from 'react';
 import {
-    setNode,
+    reset,
     changeVal,
     delegate,
     addNode,

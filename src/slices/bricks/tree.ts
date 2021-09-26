@@ -1,21 +1,237 @@
-import { TreeNode, AVLNode, RedBlackNode, SegmentNode, TrieNode, BNode } from './node';
+import { Nodewise, TreeNode, AVLNode, RedBlackNode, SegmentNode, TrieNode, BNode } from './node';
+import { LEFT, RIGHT, ROOT, RED, BLACK } from './symbol';
 
-export const LEFT = Symbol('left');
-export const RIGHT = Symbol('right');
-export const ROOT = Symbol('root');
-export const RED = Symbol("red");
-export const BLACK = Symbol("black");
-
-export class Tree<T>{
+export class Tree<T extends Nodewise>{
     root:T|null;
+    cur:T|null;
     constructor(){
         this.root = null;
+        this.cur = null;
+    }
+    delegate(val:number):number{
+        if (this.cur === null){
+            alert("Invalid operation!");
+            return -1;
+        }else if (this.cur.val > val){
+            this.cur = this.cur.left;
+        }else{
+            this.cur = this.cur.right;
+        }
+        return 0;
+    }
+}
+
+export class BSTree extends Tree<TreeNode>{
+    addNode(val:number){
+        const curNode = this.cur;
+        if (curNode === null){
+            this.root = new TreeNode(val,null,ROOT);
+        }else if (curNode.val > val){
+            curNode.left = new TreeNode(val,null,LEFT);
+            curNode.left.setParent(curNode);
+        }else{
+            curNode.right = new TreeNode(val,null,RIGHT);
+            curNode.right.setParent(curNode);
+        }
+        this.cur = this.root;
+    }
+    deleteNode(){
+        let cur = this.cur;
+        if (cur === null) return;
+        // leaf node
+        if (cur.left === null && cur.right === null){
+            switch(cur.parentSide){
+                case LEFT:
+                    cur.parent!.left = null;
+                    break;
+                case RIGHT:
+                    cur.parent!.right = null;
+                    break;
+                case ROOT:
+                    this.root = null;
+                    break;
+            }
+        // single child
+        }else if (cur.left === null){
+            cur.right!.parentSide = cur.parentSide;
+            cur.right!.parent = cur.parent;
+            switch(cur.parentSide){
+                case LEFT:
+                    cur.parent!.left = cur.right;
+                    break;
+                case RIGHT:
+                    cur.parent!.right = cur.right;
+                    break;
+                case ROOT:
+                    this.root = cur.right;
+                    break;
+            }
+        // single child
+        }else if (cur.right === null){
+            cur.left!.parentSide = cur.parentSide;
+            cur.left!.parent = cur.parent;
+            switch(cur.parentSide){
+                case LEFT:
+                    cur.parent!.left = cur.left;
+                    break;
+                case RIGHT:
+                    cur.parent!.right = cur.left;
+                    break;
+                case ROOT:
+                    this.root = cur.left;
+                    break;
+            }
+        // find swap cur either with predecessor or successor and then remove the leaf node
+        }else{
+            let predecessor:TreeNode = cur.left, successor:TreeNode = cur.right;
+            let l = 0, r = 0;
+            while (predecessor.right !== null){
+                predecessor = predecessor.right;
+                l++;
+            }
+            while (successor.left! !== null){
+                successor = successor.left;
+                r++;
+            }
+            if (l >= r){
+                cur.val = predecessor.val;
+                if (predecessor.parentSide === LEFT){
+                    cur.left = predecessor.left;
+                    if (cur.left !== null) cur.left.parent = cur;
+                }else{
+                    predecessor.parent!.right = predecessor.left;
+                    if (predecessor.left !== null){
+                        predecessor.left.parent = predecessor.parent;
+                        predecessor.left.parentSide = RIGHT;
+                    }
+                }
+            }else{
+                cur.val = successor.val;
+                if (successor.parentSide === RIGHT){
+                    cur.right = successor.right;
+                    if (cur.right !== null) cur.right.parent = cur;
+                }else{
+                    successor.parent!.left = successor.right;
+                    if (successor.right !== null){
+                        successor.right.parent = successor.parent;
+                        successor.right.parentSide = LEFT;
+                    }
+                }
+            }
+        }
+        this.cur = this.root;
     }
 }
 
 export class AVLTree extends Tree<AVLNode>{
 
-    update(node:AVLNode|null){
+    addNode(val:number){
+        const curNode = this.cur;
+        if (curNode === null){
+            this.root = new AVLNode(val,null,0,0,ROOT);
+        }else if (curNode.val > val){
+            curNode.left = new AVLNode(val,curNode,0,0,LEFT);
+        }else{
+            curNode.right = new AVLNode(val,curNode,0,0,RIGHT);
+        }
+        this.update(curNode);
+        this.cur = this.root;
+    }
+
+    deleteNode(){
+        let cur = this.cur;
+        if (cur === null) return;
+        // leaf node
+        if (cur.left === null && cur.right === null){
+            switch(cur.parentSide){
+                case LEFT:
+                    cur.parent!.left = null;
+                    break;
+                case RIGHT:
+                    cur.parent!.right = null;
+                    break;
+                case ROOT:
+                    this.root = null;
+                    break;
+            }
+            cur = cur.parent;
+        // single child
+        }else if (cur.left === null){
+            cur.right!.parentSide = cur.parentSide;
+            cur.right!.parent = cur.parent;
+            switch(cur.parentSide){
+                case LEFT:
+                    cur.parent!.left = cur.right;
+                    break;
+                case RIGHT:
+                    cur.parent!.right = cur.right;
+                    break;
+                case ROOT:
+                    this.root = cur.right;
+                    break;
+            }
+            cur = cur.parent;
+        // single child
+        }else if (cur.right === null){
+            cur.left!.parentSide = cur.parentSide;
+            cur.left!.parent = cur.parent;
+            switch(cur.parentSide){
+                case LEFT:
+                    cur.parent!.left = cur.left;
+                    break;
+                case RIGHT:
+                    cur.parent!.right = cur.left;
+                    break;
+                case ROOT:
+                    this.root = cur.left;
+                    break;
+            }
+            cur = cur.parent;
+        // find swap cur either with predecessor or successor and then remove the leaf node
+        }else{
+            let predecessor:AVLNode = cur.left, successor:AVLNode = cur.right;
+            let l = 0, r = 0;
+            while (predecessor.right !== null){
+                predecessor = predecessor.right;
+                l++;
+            }
+            while (successor.left! !== null){
+                successor = successor.left;
+                r++;
+            }
+            if (l >= r){
+                cur.val = predecessor.val;
+                if (predecessor.parentSide === LEFT){
+                    cur.left = predecessor.left;
+                    if (cur.left !== null) cur.left.parent = cur;
+                }else{
+                    predecessor.parent!.right = predecessor.left;
+                    if (predecessor.left !== null){
+                        predecessor.left.parent = predecessor.parent;
+                        predecessor.left.parentSide = RIGHT;
+                    }
+                    cur = predecessor.parent;
+                }
+            }else{
+                cur.val = successor.val;
+                if (successor.parentSide === RIGHT){
+                    cur.right = successor.right;
+                    if (cur.right !== null) cur.right.parent = cur;
+                }else{
+                    successor.parent!.left = successor.right;
+                    if (successor.right !== null){
+                        successor.right.parent = successor.parent;
+                        successor.right.parentSide = LEFT;
+                    }
+                    cur = successor.parent;
+                }
+            }
+        }
+        this.update(cur);
+        this.cur = this.root;
+    }
+
+    private update(node:AVLNode|null){
         if (node === null) return;
         node.ld = node.left === null?0:1+Math.max(node.left.ld,node.left.rd);
         node.rd = node.right === null?0:1+Math.max(node.right.ld,node.right.rd);
@@ -39,7 +255,7 @@ export class AVLTree extends Tree<AVLNode>{
         this.update(node.parent); 
     }
     // two issues first I need to update the depth no matter the child is null or not, secondly reassign root.
-    rotation(nodeA:AVLNode,nodeB:AVLNode,nodeC:AVLNode,pattern:number){
+    private rotation(nodeA:AVLNode,nodeB:AVLNode,nodeC:AVLNode,pattern:number){
         switch(pattern){
             case 0:
                 // link parentA and nodeB
@@ -149,7 +365,23 @@ export class AVLTree extends Tree<AVLNode>{
 }
 
 export class RedBlackTree extends Tree<RedBlackNode>{
-    insertRotate(z:RedBlackNode){
+    addNode(val:number){
+        const curNode = this.cur;
+        const nxt = new RedBlackNode(val,curNode,ROOT,RED);
+        if (curNode === null){
+            this.root = nxt;
+            nxt.color = BLACK;
+        }else if (curNode.val > val){
+            curNode.left = nxt;
+            nxt.parentSide = LEFT;
+        }else{
+            curNode.right = nxt;
+            nxt.parentSide = RIGHT;
+        }
+        this.insertRotate(nxt);
+    }
+
+    private insertRotate(z:RedBlackNode){
         while (z.parent !== null && z.parent.color === RED){
             const grandparent:RedBlackNode = z.parent.parent!, parent = z.parent, uncle:RedBlackNode|null = z.parent.color === LEFT?grandparent.right: grandparent.left;
             if (uncle !== null && uncle.color === RED){
@@ -223,6 +455,95 @@ export class RedBlackTree extends Tree<RedBlackNode>{
             }
         }
         this.root!.color = BLACK;
+    }
+
+    deleteNode(val:number){
+        let cur = this.cur;
+        if (cur === null) return;
+        let curColor = cur.color;
+        if (cur.left === null && cur.right === null){
+            switch(cur.parentSide){
+                case LEFT:
+                    cur.parent!.left = null;
+                    break;
+                case RIGHT:
+                    cur.parent!.right = null;
+                    break;
+                case ROOT:
+                    this.root = null;
+                    break;
+            }
+        }else if (cur.left === null){
+            cur.right!.parentSide = cur.parentSide;
+            cur.right!.parent = cur.parent;
+            switch(cur.parentSide){
+                case LEFT:
+                    cur.parent!.left = cur.right;
+                    break;
+                case RIGHT:
+                    cur.parent!.right = cur.right;
+                    break;
+                case ROOT:
+                    this.root = cur.right;
+                    break;
+            }
+        }else if (cur.right === null){
+            cur.left!.parentSide = cur.parentSide;
+            cur.left!.parent = cur.parent;
+            switch(cur.parentSide){
+                case LEFT:
+                    cur.parent!.left = cur.left;
+                    break;
+                case RIGHT:
+                    cur.parent!.right = cur.left;
+                    break;
+                case ROOT:
+                    this.root = cur.left;
+                    break;
+            }
+        }else{
+            let predecessor:RedBlackNode = cur.left, successor:RedBlackNode = cur.right;
+            let l = 0, r = 0;
+            while (predecessor.right !== null){
+                predecessor = predecessor.right;
+                l++;
+            }
+            while (successor.left! !== null){
+                successor = successor.left;
+                r++;
+            }
+            curColor = l >= r ? predecessor.color:successor.color;
+            if (l >= r){
+                cur.val = predecessor.val;
+                if (predecessor.parentSide === LEFT){
+                    cur.left = predecessor.left;
+                    if (cur.left !== null) cur.left.parent = cur;
+                }else{
+                    predecessor.parent!.right = predecessor.left;
+                    if (predecessor.left !== null){
+                        predecessor.left.parent = predecessor.parent;
+                        predecessor.left.parentSide = RIGHT;
+                    }
+                    cur = predecessor.parent;
+                }
+            }else{
+                cur.val = successor.val;
+                if (successor.parentSide === RIGHT){
+                    cur.right = successor.right;
+                    if (cur.right !== null) cur.right.parent = cur;
+                }else{
+                    successor.parent!.left = successor.right;
+                    if (successor.right !== null){
+                        successor.right.parent = successor.parent;
+                        successor.right.parentSide = LEFT;
+                    }
+                    cur = successor.parent;
+                }
+            }
+        }
+        // haven't updated
+        // if (curColor === BLACK) this.update(cur);
+        this.cur = this.root;
     }
 }
 
@@ -424,20 +745,28 @@ export class TrieTree<TrieNode>{
     }
 }
 
-export class BTree extends Tree<BNode>{
+interface BNodeType{
+    keys:number[];
+    children:BNode[];
+    parent:BNode|null;
+    isLeaf:boolean;
+    id:String;
+}
+export class BTree<BNode extends BNodeType>{
     Order:number;
+    root:BNodeType|null;
     constructor(Order:number){
-        super();
+        this.root = null;
         this.Order = Order;
     }
 
-    split(Node:BNode){
+    split(Node:BNodeType){
         // no further split
         if (Node.keys.length < this.Order){
             return;
         }
         // indices probably not right; wait for fixes
-        const children:BNode[] = Node.children, keys:number[] = Node.keys, isLeaf = Node.isLeaf, parent = Node.parent, id = Node.id;
+        const children:BNodeType[] = Node.children, keys:number[] = Node.keys, isLeaf = Node.isLeaf, parent:BNodeType|null = Node.parent, id = Node.id;
         const breakPoint = Math.floor(this.Order/2)-1, bpKey = keys[breakPoint], leftKeys = keys.slice(0,breakPoint), rightKeys = keys.slice(breakPoint+1,this.Order-1);
         const leftChildren = children.slice(0,breakPoint), rightChildren = children.slice(breakPoint,this.Order);
         const left = new BNode(), right = new BNode();

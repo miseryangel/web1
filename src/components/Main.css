@@ -1,0 +1,114 @@
+/* dropdown menu style */
+.navbar{
+    height:60px;
+  }
+  button.dropdown-item:hover, button.dropdown-item:active{
+    background-color:aqua;
+    color:#d966ff;
+    cursor:pointer;
+  }
+  #slogan-home{
+    font-family: Times, "Times New Roman", Georgia, serif;
+    font-size: 1.1em;
+    color:white;
+    padding-left:10px;
+  }
+  .dropdown-toggle:hover {
+    color: transparent;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+  }
+  
+  /* search bar */
+  .search-bar{
+    margin-top: 40px;
+  }
+  /* playground */
+  .playground{
+    height:500px;
+    width:600px;
+    background-color:bisque;
+  }
+  
+  
+  
+  /* need to delete later */
+  canvas{
+    height: 800px;
+    width: 70vw;
+    background-color:cornsilk;
+  }
+  
+  
+  
+  
+  .linkedList{
+      width: 20px;
+      height: 20px;
+  }
+  
+  
+   /* for NQueen */
+  #chessboard{
+      height: 400px;
+      width: 400px;
+      background-color: #1aff1a;
+      align-items: center;
+      align-self: center;
+    }
+    
+    .tile{
+      height:100px;
+      width:100px;
+      margin:1px;
+      background-color: #d966ff;
+    }
+    
+    .blank{
+      background-color:bisque;
+    }
+    
+    .chosen{
+      background-color:red;
+    }
+    
+    .queen{
+      background-color: #a64dff;
+    }
+  
+    .obs{
+      background-color:darkblue;
+    }
+    .visited{
+      background-color:greenyellow;
+    }
+    .path{
+      background-color:#ffdb4d;
+    }
+  
+    
+    .array-container {
+      position: absolute;
+      left: 100px;
+      /* top: 100px; */
+    }
+    
+    .array-bar {
+      width: 2px;
+      display: inline-block;
+      margin: 0 1px;
+      background-color:#aad1a5
+    }
+    .tree-node{
+      border-radius: 50%;
+      background-color:#a64dff;
+      width:20px;
+      height:20px;
+      position: absolute;
+    }
+    .cur-tree-node{
+      border-radius: 50%;
+      background-color:rgb(211, 214, 39);
+    }
+    .tree-row{
+      height:50px;
+    }

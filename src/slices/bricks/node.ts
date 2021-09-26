@@ -1,5 +1,10 @@
 import { v4 as uuid } from 'uuid';
 
+export interface Nodewise{
+    val:number;
+    left:any;
+    right:any;
+}
 // generic tree node
 class Node<T>{
     val: number;
@@ -22,6 +27,15 @@ export class TreeNode extends Node<TreeNode>{
     }
 }
 
+export interface AVLType{
+    val: number;
+    left: AVLType|null;
+    right: AVLType|null;
+    parent: AVLType|null;
+    parentSide:Symbol;
+    ld:number;
+    rd:number;
+}
 // avl node recording height of two subtrees
 export class AVLNode extends Node<AVLNode>{
     ld:number;
