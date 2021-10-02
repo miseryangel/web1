@@ -1,7 +1,7 @@
 import { makeStyles } from "@material-ui/core/styles";
 import yellow from "@material-ui/core/colors/yellow";
 
-export const arrayStyles = makeStyles((theme) => ({
+export const linkedListStyles = makeStyles((theme) => ({
     root: {
       display: "flex",
       flexWrap: "wrap",
@@ -13,9 +13,6 @@ export const arrayStyles = makeStyles((theme) => ({
         backgroundColor: yellow[300],
         textAlign: "center",     
         padding: theme.spacing(1)
-      },
-    },
-    textField: {
-      marginBottom: theme.spacing(0.5),
+      }
     }
   }));

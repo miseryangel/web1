@@ -1,45 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { Typography, Box, Grid, Button, TextField, ButtonGroup, FormControl, InputLabel, Select, MenuItem } from '@material-ui/core';
-import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import React,{ useState, useEffect } from 'react';
+import { Grid, Typography, ButtonGroup, Box, FormControl, MenuItem, Select, Button, TextField } from '@material-ui/core';
+import {useAppDispatch, useAppSelector} from '../../app/hooks';
 import {
-    arrayReset,
-    arrayResize,
-    arrayAdd,
-    arrayContains,
-    arrayIndexOf,
-    arrayLastIndexOf,
-    arrayGet,
-    arraySet,
-    arrayRemove,
-    arrayClear,
-    arraySubList,
-    arraySort,
-    arrayFill
+    linkedListReset,
+    linkedListResize,
+    linkedListAddFirst,
+    linkedListAddLast,
+    linkedListPollFirst,
+    linkedListPollLast,
+    linkedListContains,
+    linkedListIndexOf,
+    linkedListLastIndexOf,
+    linkedListGet,
+    linkedListSet,
+    linkedListRemove,
+    linkedListClear,
+    linkedListSort,
+    linkedListInsert
 } from '../../slices/Array';
-import { List } from '../bits/List';
+import {List} from '../bits/List';
 
-function ConditionalArrayRenderer(props:{arr:number[],active:number}){
+function ConditionalLLRenderer(props:{arr:number[],active:number}){
   if (props.arr.length === 0){
-    return <Typography variant="h6" color = "secondary">Array is Empty!</Typography>
+    return <Typography variant="h6" color = "secondary">LinkedList is Empty!</Typography>
   }else{
     return <List arr = {props.arr} active = {props.active}/>
   }
-}  
+} 
 
-
-function Array(){
+function LinkedList(){
     const dispatch = useAppDispatch();
-    const array = useAppSelector(state => state.array.arr);
-    const arrLen = useAppSelector(state => state.array.len);
-    const value = useAppSelector(state => state.array.val);
+    const linkedList = useAppSelector(state => state.linkedList.arr);
+    const llLen = useAppSelector(state => state.linkedList.len);
+    const value = useAppSelector(state => state.linkedList.val);
     const [val,setVal] = useState(0);
+    const [len,setLen] = useState(llLen);
     const [msg,setMsg] = useState<String>("");
+    const [visible,setVisible] = useState(false);
     const [index,setIndex] = useState(0);
     const [order,setOrder] = useState(0);
-    const [len,setLen] = useState(array.length);
-    const [visible,setVisible] = useState(false);
-    const [start,setStart] = useState(0);
-    const [end,setEnd] = useState(len);
     const [active,setActive] = useState(-1);
     const [on,setOn] = useState(false);
 
@@ -56,12 +55,13 @@ function Array(){
         clearInterval(interval!);
       }
       return () =>clearInterval(interval!);
-    },[visible,value,on,active,array,arrLen])
+    },[visible,value,on,active,llLen])
 
     const msgHandler = (message:String) =>{
       setVisible(true);
       setMsg(message);
-      setInterval(() => setVisible(false),2000);
+      let interval = setInterval(() => setVisible(false),2000);
+      return () =>clearInterval(interval);
     }
 
     const orderHandler = (event:React.ChangeEvent<{ value: unknown }>) =>{
@@ -70,17 +70,17 @@ function Array(){
 
     const iteratorHandler = () =>{
       setOn(true);
-      setLen(array.length);
+      setLen(llLen);
       order === 0?setActive(0):setActive(len-1);
     }
-
+    
     return (
       <Grid container  spacing = {3} justifyContent="center" >
         <Grid item xs = {10}>
-          <Typography variant="h4">Array</Typography>
-          <ConditionalArrayRenderer arr = {array} active = {active} />
-          
+          <Typography variant="h4">LinkedList</Typography>
+          <ConditionalLLRenderer arr = {linkedList} active = {active} />
         </Grid>
+
         <Grid item xs = {10} >
 
           <ButtonGroup
@@ -88,43 +88,91 @@ function Array(){
             aria-label="vertical outlined button group"
             color="primary"
           >
-            <Button variant = "contained" onClick= {() => dispatch(arrayReset())}>Refresh</Button>
-            <Button onClick= {() => msgHandler(`The length of array is ${arrLen}`)}>GetSize</Button>
-            <Button onClick= {() => arrLen === 0?msgHandler("Array is Empty !"):msgHandler("Array is not empty!")}>IsEmpty</Button>
-            <Button onClick= {() => dispatch(arrayClear())}>Clear</Button>
+            <Button variant = "contained" onClick= {() => dispatch(linkedListReset())}>Refresh</Button>
+            <Button onClick= {() => msgHandler(`The length of linkedList is ${llLen}`)}>GetSize</Button>
+            <Button onClick= {() => llLen === 0?msgHandler("LinkedList is Empty !"):msgHandler("LinkedList is not empty!")}>IsEmpty</Button>
+            <Button onClick= {() => {
+              dispatch(linkedListClear());
+            }}>Clear</Button>
           </ButtonGroup>
+
+          <ButtonGroup
+            orientation="vertical"
+            aria-label="vertical outlined button group"
+            color="primary"
+          >
+            <Button onClick= {() => {
+              if (linkedList.length === 0){
+                msgHandler("LinkedList is Empty !");
+              }else{
+                msgHandler(`The first element is ${linkedList[0]}`);
+              }
+            }}>PeekFirst</Button>
+            <Button onClick= {() => {
+              if (linkedList.length === 0){
+                msgHandler("LinkedList is Empty !");
+              }else{
+                msgHandler(`The last element is ${linkedList[linkedList.length-1]}`);
+              }
+            }}>PeekLast</Button>
+            <Button onClick= {() => {
+              if (linkedList.length === 0){
+                msgHandler("LinkedList is Empty !");
+              }else{
+                msgHandler(`The fetched element is ${linkedList[0]}`);
+                dispatch(linkedListPollFirst());
+              }
+            }}>PollFirst</Button>
+            <Button onClick= {() => {
+              if (linkedList.length === 0){
+                msgHandler("LinkedList is Empty !");
+              }else{
+                msgHandler(`The fetched element is ${linkedList[linkedList.length-1]}`);
+                dispatch(linkedListPollLast());
+              }
+            }}>PollLast</Button>
+          </ButtonGroup>
+
           <ButtonGroup
             orientation="vertical"
             aria-label="vertical outlined button group"
             color="secondary"
           >
             <Button onClick= {() => {
-                if (arrLen >= 20){
-                  msgHandler("Array length has reached uplimit !")
+                if (linkedList.length >= 20){
+                  msgHandler("The length of LinkedList has reached uplimit !")
                 }else{
-                  dispatch(arrayAdd(val));
+                  dispatch(linkedListAddFirst(val));
                 }
             }}>
-              Add
+              AddFirst
             </Button>
             <Button onClick= {() => {
-              console.log(val);
-              value === -1?msgHandler("Element is not in the array !"):msgHandler("Element is in the array !");
+                if (linkedList.length >= 20){
+                  msgHandler("The length of LinkedList has reached uplimit !")
+                }else{
+                  dispatch(linkedListAddLast(val));
+                }
+            }}>
+              AddLast
+            </Button>
+            <Button onClick= {() => {
+              dispatch(linkedListContains(val));
+              value === -1?msgHandler("Element is not in the linkedList !"):msgHandler("Element is in the linkedList !");
             }}>
               Contains
             </Button>
             <Button onClick= {() => {
-              dispatch(arrayIndexOf(val));
-              value === -1?msgHandler("Element is not in the array !"):msgHandler(`The last index of element is ${value} !`);
-            }}>
-              IndexOf
-            </Button>
-            <Button onClick= {() =>{
-                dispatch(arrayLastIndexOf(val));
-                value === -1?msgHandler("Element is in not array !"):msgHandler(`the first index of element is ${value} !`);
-              }}>
-              LastIndexOf
-            </Button>
+              console.log("val is",val);
+              dispatch(linkedListIndexOf(val));
+              console.log(value);
+              if (value === -1){
+                msgHandler("Element is in not linkedList !");
+              }else{
+                dispatch(linkedListRemove());
+              }
+            }}>Remove</Button>
+            
           </ButtonGroup>
           <ButtonGroup
             orientation="vertical"
@@ -144,7 +192,7 @@ function Array(){
                       max: 100, min: 0 
                   }
                 }}
-                defaultValue = {val}
+                defaultValue = {llLen}
                 variant="outlined"
                 size="small"
                 onChange = {(e) => setVal(+e.target.value)}
@@ -184,15 +232,15 @@ function Array(){
                       max: 20, min: 0 
                   }
                 }}
-                defaultValue = {len}
+                value = {len}
                 variant="outlined"
                 size="small"
                 onChange={(e)=>{
                   const newLen = +e.target.value;
                   if (newLen >= 0  && newLen <= 20){
                     setLen(newLen);
-                    dispatch(arrayResize(newLen));
-                    dispatch(arrayReset());
+                    dispatch(linkedListResize(newLen));
+                    dispatch(linkedListReset());
                   }else if (newLen < 0){
                     msgHandler("invalid length !");
                   }else{
@@ -209,31 +257,36 @@ function Array(){
             color="primary"
           >
             <Button onClick= {() => {
+              dispatch(linkedListIndexOf(val));
+              value === -1?msgHandler("Element is in not linkedlist !"):msgHandler(`The last index of element is ${value} !`);
+            }}>
+              IndexOf
+            </Button>
+            <Button onClick= {() =>{
+                if (linkedList.length >= 20){
+                  msgHandler("The length of linkedlist has reached the uplimit !");
+                }else{
+                  dispatch(linkedListInsert({index:index,element:val}));
+                }
+              }}>
+              Insert
+            </Button>
+            <Button onClick= {() => {
               if (index < 0 || index >= len){
-                msgHandler("Element is in not array !");
+                msgHandler("Element is in not linkedList !");
               }else{
-                dispatch(arrayGet(index));
+                dispatch(linkedListGet(index));
                 msgHandler(`The fetched element is ${value}`);
               }
             }}>Get</Button>
-            <Button onClick= {() => {
-              console.log("val is",val);
-              dispatch(arrayIndexOf(val));
-              console.log(value);
-              if (value === -1){
-                msgHandler("Element is in not array !");
-              }else{
-                dispatch(arrayRemove());
-              }
-            }}>Remove</Button>
-            <Button onClick= {() => dispatch(arrayFill(val))}>Fill</Button>
+            
             <Button onClick= {() => {
               if (index < 0 || index >= len){
-                msgHandler("Element is in not array !");
+                msgHandler("Element is in not linkedList !");
               }else if (val < 0 || val >= 100){
                 msgHandler("value out of range !");
               }else{
-                dispatch(arraySet({index:index,element:val}));
+                dispatch(linkedListSet({index:index,element:val}));
               }
               }}>set</Button>
           </ButtonGroup>
@@ -257,64 +310,12 @@ function Array(){
               <MenuItem value={1}>Descending</MenuItem>
             </Select>
             </FormControl>
-            <Button onClick= {() => dispatch(arraySort(order))}>Sort</Button>
-          </ButtonGroup>
-          <ButtonGroup
-            orientation="vertical"
-            aria-label="vertical outlined button group"
-            color="primary"
-          >
-          </ButtonGroup>
-
-          <ButtonGroup
-            orientation="vertical"
-            aria-label="vertical outlined button group"
-            color="primary"
-          >
-            <div className = "label-container">
-              <TextField
-                label="startIndex"
-                className="outlined-number"
-                type="number"
-                value={start}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                variant="outlined"
-                size="small"
-                onChange={(e) => setStart(+e.target.value)}
-              />
-            </div>
-            <Button onClick= {() => {
-                console.log(len);
-                if (start < 0 || start > end || end > len){
-                  msgHandler("Invalid indices!");
-                }else{
-                  dispatch(arraySubList({from:start,to:end}));
-                }
-              }}>
-              Sublist
-            </Button>
-            <Box pt={1}>
-              <TextField
-                label="endIndex"
-                className="outlined-number"
-                type="number"
-                value={end}
-                size="small"
-                onChange={(e) => setEnd(+e.target.value)}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                variant="outlined"
-              />
-            </Box>
+            <Button onClick= {() => dispatch(linkedListSort(order))}>Sort</Button>
           </ButtonGroup>
           {visible && <Typography color="secondary" variant="h6">{msg}</Typography>}
         </Grid>
-        
     </Grid>
     );
 }
 
-export default Array;
+export default LinkedList;

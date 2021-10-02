@@ -7,6 +7,9 @@ import HomePage from './HomePage';
 import Array from './Array/Array';
 import BST from './Trees/BST';
 import './Main.css';
+import Queue from './Array/Queue';
+import Stack from './Array/Stack';
+import LinkedList from './Array/LinkedList';
 
 
 
@@ -32,6 +35,24 @@ function Main (){
                   />
                 } 
             />
+            <Route path="/Queue" 
+                component={() => 
+                  <Queue
+                  />
+                } 
+            />
+            <Route path="/Stack" 
+                component={() => 
+                  <Stack
+                  />
+                } 
+            />
+            <Route path="/LinkedList" 
+                component={() => 
+                  <LinkedList
+                  />
+                } 
+            />
             <Route path="/Tree/BinarySearchTree" 
                 component={() => 
                   <BST
@@ -44,7 +65,6 @@ function Main (){
       </Container>
     </React.Fragment>
   );
-  
 
 }
 
