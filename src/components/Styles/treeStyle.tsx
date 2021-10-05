@@ -1,7 +1,8 @@
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles"; 
+import { makeStyles,Theme } from "@material-ui/core/styles";
 import yellow from "@material-ui/core/colors/yellow";
+import white from "@material-ui/core/colors/yellow";
 
-export const useStyles = makeStyles((theme:any) => ({
+export const arrayStyles = makeStyles((theme:Theme) => ({
     root: {
       display: "flex",
       flexWrap: "wrap",
@@ -13,6 +14,15 @@ export const useStyles = makeStyles((theme:any) => ({
         backgroundColor: yellow[300],
         textAlign: "center",     
         padding: theme.spacing(1)
-      }
+      },
+    },
+    textField: {
+      marginBottom: theme.spacing(0.5),
+    },
+    active:{
+      backgroundColor: yellow[700],
+    },
+    transform:{
+      background:'linear-gradient(45deg,#9fff80,#3399ff)',
     }
   }));

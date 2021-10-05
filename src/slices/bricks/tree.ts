@@ -3,40 +3,49 @@ import { LEFT, RIGHT, ROOT, RED, BLACK } from './symbol';
 
 export class Tree<T extends Nodewise>{
     root:T|null;
-    cur:T|null;
     constructor(){
         this.root = null;
-        this.cur = null;
     }
-    delegate(val:number):number{
-        if (this.cur === null){
-            alert("Invalid operation!");
-            return -1;
-        }else if (this.cur.val > val){
-            this.cur = this.cur.left;
+    addHelper(node:null|T,val:number):T|null{
+        if (node === null) return null;
+        if (node.val > val){
+            if (node.left === null){
+                return node;
+            }
+            return this.addHelper(node.left,val);
         }else{
-            this.cur = this.cur.right;
+            if (node.right === null){
+                return node;
+            }
+            return this.addHelper(node.right,val);
         }
-        return 0;
+    }
+    dfs(val:number,node:T|null):T|null{
+        if (node === null) return null;
+        if (node.val > val){
+            return this.dfs(val,node.left);
+        }else if (node.val === val){
+            return node;
+        }else{
+            return this.dfs(val,node.right);
+        }
     }
 }
 
 export class BSTree extends Tree<TreeNode>{
     addNode(val:number){
-        const curNode = this.cur;
+        const curNode = this.addHelper(this.root,val);
         if (curNode === null){
             this.root = new TreeNode(val,null,ROOT);
         }else if (curNode.val > val){
-            curNode.left = new TreeNode(val,null,LEFT);
-            curNode.left.setParent(curNode);
+            curNode.left = new TreeNode(val,curNode,LEFT);
         }else{
-            curNode.right = new TreeNode(val,null,RIGHT);
-            curNode.right.setParent(curNode);
+            curNode.right = new TreeNode(val,curNode,RIGHT);
         }
-        this.cur = this.root;
     }
-    deleteNode(){
-        let cur = this.cur;
+
+    deleteNode(val:number){
+        let cur = this.dfs(val,this.root);
         if (cur === null) return;
         // leaf node
         if (cur.left === null && cur.right === null){
@@ -119,14 +128,13 @@ export class BSTree extends Tree<TreeNode>{
                 }
             }
         }
-        this.cur = this.root;
     }
 }
 
 export class AVLTree extends Tree<AVLNode>{
 
     addNode(val:number){
-        const curNode = this.cur;
+        const curNode = this.addHelper(this.root,val);
         if (curNode === null){
             this.root = new AVLNode(val,null,0,0,ROOT);
         }else if (curNode.val > val){
@@ -135,11 +143,10 @@ export class AVLTree extends Tree<AVLNode>{
             curNode.right = new AVLNode(val,curNode,0,0,RIGHT);
         }
         this.update(curNode);
-        this.cur = this.root;
     }
 
-    deleteNode(){
-        let cur = this.cur;
+    deleteNode(val:number){
+        let cur = this.dfs(val,this.root);
         if (cur === null) return;
         // leaf node
         if (cur.left === null && cur.right === null){
@@ -228,7 +235,6 @@ export class AVLTree extends Tree<AVLNode>{
             }
         }
         this.update(cur);
-        this.cur = this.root;
     }
 
     private update(node:AVLNode|null){
@@ -366,7 +372,7 @@ export class AVLTree extends Tree<AVLNode>{
 
 export class RedBlackTree extends Tree<RedBlackNode>{
     addNode(val:number){
-        const curNode = this.cur;
+        const curNode = this.addHelper(this.root,val);
         const nxt = new RedBlackNode(val,curNode,ROOT,RED);
         if (curNode === null){
             this.root = nxt;
@@ -458,7 +464,7 @@ export class RedBlackTree extends Tree<RedBlackNode>{
     }
 
     deleteNode(val:number){
-        let cur = this.cur;
+        let cur = this.dfs(val,this.root);
         if (cur === null) return;
         let curColor = cur.color;
         if (cur.left === null && cur.right === null){
@@ -543,7 +549,7 @@ export class RedBlackTree extends Tree<RedBlackNode>{
         }
         // haven't updated
         // if (curColor === BLACK) this.update(cur);
-        this.cur = this.root;
+        //this.cur = this.root;
     }
 }
 

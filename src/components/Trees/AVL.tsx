@@ -1,18 +1,18 @@
-import { TreeNode } from "../../slices/bricks/node";
+import {  AVLNode } from "../../slices/bricks/node";
 import { Input , Typography, Box, Grid, Button, TextField, ButtonGroup, FormControl, Select, MenuItem } from '@material-ui/core';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { Tree } from '../bits/Tree';
 import { useState, useEffect } from 'react';
 import {
-    addNode,
-    deleteNode
+    avlAddNode,
+    avlDeleteNode
 } from '../../slices/Tree';
 
-function ConditionalTreeRenderer(props:{root:TreeNode | null, active:number}){
+function ConditionalTreeRenderer(props:{root:AVLNode | null, active:number}){
     if (props.root === null){
       return (
         <Box pt = {5} pb={2} >
-            <Typography variant="h6" color = "secondary">Tree is Empty!</Typography>
+        <Typography variant="h6" color = "secondary">AVLTree is Empty!</Typography>
         </Box>
         )
     }else{
@@ -21,11 +21,11 @@ function ConditionalTreeRenderer(props:{root:TreeNode | null, active:number}){
   }  
 
 
-const BST = () =>{
+const AVL = () =>{
     const dispatch = useAppDispatch();
-    const tree = useAppSelector(state => state.bst.tree);
+    const tree = useAppSelector(state => state.avl.tree);
     const root = tree.root;
-    const visited = useAppSelector(state => state.bst.visited);
+    const visited = useAppSelector(state => state.avl.visited);
     const [val,setVal] = useState(-1);
     const [nodeVal,setNodeVal] = useState(-1);
     const [msg,setMsg] = useState<String>("");
@@ -42,7 +42,7 @@ const BST = () =>{
         return () =>clearInterval(interval);
     }
 
-    const inOrder = (node:TreeNode|null) =>{
+    const inOrder = (node:AVLNode|null) =>{
         if (node === null) return;
         inOrder(node.left);
         let interval = setInterval(() => setVal(node.val),500);
@@ -50,7 +50,7 @@ const BST = () =>{
         return () =>clearInterval(interval);
     }
 
-    const preOrder = (node:TreeNode|null) =>{
+    const preOrder = (node:AVLNode|null) =>{
         if (node === null) return;
         let interval = setInterval(() => setVal(node.val),500);
         preOrder(node.left);
@@ -58,7 +58,7 @@ const BST = () =>{
         return () =>clearInterval(interval);
     }
 
-    const postOrder = (node:TreeNode|null) =>{
+    const postOrder = (node:AVLNode|null) =>{
         if (node === null) return;
         postOrder(node.left);
         postOrder(node.right);
@@ -80,7 +80,7 @@ const BST = () =>{
         }
         setVal(-1);
     }
-    const dfs = (node: TreeNode|null, value:number):number =>{
+    const dfs = (node: AVLNode|null, value:number):number =>{
         if (node === null) return 0;
         if (value > node.val){
             return dfs(node.right,value);
@@ -91,7 +91,7 @@ const BST = () =>{
     return (
         <Box pt={5}>
             <Grid container spacing = {3} justify="center">
-                <Grid item xs = {8} > 
+                <Grid item xs = {8} justify="center"> 
                     <ConditionalTreeRenderer root = {root} active = {val} />
                 </Grid>
                 <Grid item xs = {3}>
@@ -163,21 +163,21 @@ const BST = () =>{
                     >
                         <Button onClick= {() =>{
                             if (visited.has(val)){
-                                msgHandler("TreeNode already exists!");
+                                msgHandler("AVLNode already exists!");
                             }else{
                                 const depth = dfs(root,val);
                                 if (depth > 5){
                                     msgHandler("Tree has reached the height limit !");
                                     return;
                                 }
-                                dispatch(addNode(val));
+                                dispatch(avlAddNode(val));
                             }
                         }} >insert</Button>
                         <Button onClick= {() =>{
                             if (!visited.has(val)){
-                                msgHandler("TreeNode doesn't exist!");
+                                msgHandler("AVLNode doesn't exist!");
                             }else{
-                                dispatch(deleteNode(val));
+                                dispatch(avlDeleteNode(val));
                             }
                         }} >remove</Button>
                         <Button onClick= {traverseHandler} >traverse</Button>
@@ -190,4 +190,4 @@ const BST = () =>{
     )
 }
 
-export default BST;
+export default AVL;

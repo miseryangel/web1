@@ -31,49 +31,6 @@ export const arraySlice = createSlice({
                 return {payload};
             },
         },
-        contains:{
-            reducer(state,action:PayloadAction<number>){
-                if (state.arr.includes(action.payload)){
-                    state.val = 1;
-                }else{
-                    state.val = -1;
-                }
-            },
-            prepare(payload:number){
-                return {payload};
-            },
-        },
-        indexOf:{
-            reducer(state,action:PayloadAction<number>){
-                state.val = state.arr.indexOf(action.payload);
-            },
-            prepare(payload:number){
-                return {payload};
-            },
-        },
-        lastIndexOf:{
-            reducer(state,action:PayloadAction<number>){
-                let n = state.arr.length;
-                for (let i = n - 1; i >= 0; i--){
-                    if (state.arr[i] === action.payload) {
-                        state.val = i;
-                        return;
-                    }
-                }
-                state.val = -1;
-            },
-            prepare(payload:number){
-                return {payload};
-            },
-        },
-        get:{
-            reducer(state,action:PayloadAction<number>){
-                state.val = state.arr[action.payload];
-            },
-            prepare(payload:number){
-                return {payload};
-            },
-        },
         set:{
             reducer(state,action:PayloadAction<{index:number,element:number}>){
                 let idx = action.payload.index, val = action.payload.element;
@@ -83,9 +40,14 @@ export const arraySlice = createSlice({
                 return {payload};
             },
         },
-        remove:(state) =>{
-            state.arr.splice(state.val,1);
-            state.len--;
+        remove:{
+            reducer(state,action:PayloadAction<number>){
+                state.arr.splice(action.payload,1);
+                state.len--;
+            },
+            prepare(payload:number){
+                return {payload};
+            },
         },
         clear:state =>{
             state.arr.splice(0,state.arr.length);
@@ -121,6 +83,15 @@ export const arraySlice = createSlice({
                 return {payload};
             },
         },
+        transform:{
+            reducer(state,action:PayloadAction<number[]>){
+                state.arr = action.payload;
+                state.len = action.payload.length;
+            },
+            prepare(payload:number[]){
+                return {payload};
+            },
+        }
     }
 })
 
@@ -130,7 +101,6 @@ export const linkedListSlice = createSlice({
     initialState: {
         arr:randomArray(initialLength),
         len:initialLength,
-        val:0,
     },
     reducers: {
         reset: state =>{
@@ -171,49 +141,6 @@ export const linkedListSlice = createSlice({
             state.arr.splice(state.arr.length-1,1);
             state.len--;
         },
-        contains:{
-            reducer(state,action:PayloadAction<number>){
-                if (state.arr.includes(action.payload)){
-                    state.val = 1;
-                }else{
-                    state.val = -1;
-                }
-            },
-            prepare(payload:number){
-                return {payload};
-            },
-        },
-        indexOf:{
-            reducer(state,action:PayloadAction<number>){
-                state.val = state.arr.indexOf(action.payload);
-            },
-            prepare(payload:number){
-                return {payload};
-            },
-        },
-        lastIndexOf:{
-            reducer(state,action:PayloadAction<number>){
-                let n = state.arr.length;
-                for (let i = n - 1; i >= 0; i--){
-                    if (state.arr[i] === action.payload) {
-                        state.val = i;
-                        return;
-                    }
-                }
-                state.val = -1;
-            },
-            prepare(payload:number){
-                return {payload};
-            },
-        },
-        get:{
-            reducer(state,action:PayloadAction<number>){
-                state.val = state.arr[action.payload];
-            },
-            prepare(payload:number){
-                return {payload};
-            },
-        },
         set:{
             reducer(state,action:PayloadAction<{index:number,element:number}>){
                 let idx = action.payload.index, val = action.payload.element;
@@ -232,9 +159,14 @@ export const linkedListSlice = createSlice({
                 return {payload};
             },
         },
-        remove:(state) =>{
-            state.arr.splice(state.val,1);
-            state.len--;
+        remove:{
+            reducer(state,action:PayloadAction<number>){
+                state.arr.splice(action.payload,1);
+                state.len--;
+            },
+            prepare(payload:number){
+                return {payload};
+            },
         },
         sort:{
             reducer(state,action:PayloadAction<number>){
@@ -252,6 +184,15 @@ export const linkedListSlice = createSlice({
             state.arr.splice(0,state.arr.length);
             state.len = 0;
         },
+        transform:{
+            reducer(state,action:PayloadAction<number[]>){
+                state.arr = action.payload;
+                state.len = action.payload.length;
+            },
+            prepare(payload:number[]){
+                return {payload};
+            },
+        }
     }
 })
 
@@ -261,22 +202,14 @@ export const queueSlice = createSlice({
     initialState: {
         arr:randomArray(initialLength),
         len:initialLength,
-        val:null as (null|number),
-        idx:null as (null|number)
     },
     reducers: {
         reset: state =>{
-            state.arr = randomArray(initialLength);
-            state.len = initialLength;
+            state.arr = randomArray(state.len);
         },
         resize:{
             reducer(state,action:PayloadAction<number>){
-                if (action.payload === 1){
-                    state.len++;
-                }else{
-                    state.len--;
-                }
-                state.arr = randomArray(state.len);
+                state.len = action.payload;
             },
             prepare(payload:number){
                 return {payload};
@@ -284,58 +217,26 @@ export const queueSlice = createSlice({
         },
         add:{
             reducer(state,action:PayloadAction<number>){
-                if (state.arr.length === maxLength){
-                    alert("Queue has reached its initial capacity!");
-                    return;
-                }
                 state.arr.push(action.payload);
+                state.len++;
             },
             prepare(payload:number){
                 return {payload};
             },
         },
         poll: state=>{
-            state.val = state.arr.splice(0,1)[0];
+            state.arr.splice(0,1);
+            state.len--;
         },
-        // need to draw setInterval to application page
-        peek: state=>{
-            if (state.arr.length === 0){
-                alert("Queue is empty");
-                return;
-            }
-            state.val = state.arr.splice(state.arr.length-1,1)[0];
-            setInterval(()=>state.val = null, 500);
-        },
-        contains:{
-            reducer(state,action:PayloadAction<number>){
-                if (state.arr.includes(action.payload)){
-                    alert("Queue contains the element !");
-                }else{
-                    alert("Queue doesn't contain the element !");
-                }
+        transform:{
+            reducer(state,action:PayloadAction<number[]>){
+                state.arr = action.payload;
+                state.len = action.payload.length;
             },
-            prepare(payload:number){
+            prepare(payload:number[]){
                 return {payload};
             },
-        },
-        iterator:{
-            reducer(state,action:PayloadAction<number>){
-                const n = state.arr.length;
-                if (action.payload === 1){
-                    for (let i = n - 1; i >= 0 ; i--){
-                        setInterval(()=>state.idx = i, 100);
-                    }
-                }else{
-                    for (let i = 0; i <= n ; i++){
-                        setInterval(()=>state.idx = i, 100);
-                    }
-                }
-                state.idx = null;
-            },
-            prepare(payload:number){
-                return {payload};
-            },
-        },
+        }
     },
 })
 
@@ -345,41 +246,23 @@ export const stackSlice = createSlice({
     initialState: {
         arr:randomArray(initialLength),
         len:initialLength,
-        val:null as (null|number),
-        idx:null as (null|number)
     },
     reducers: {
         reset: state =>{
-            state.arr = randomArray(initialLength);
-            state.len = initialLength;
+            state.arr = randomArray(state.len);
         },
         resize:{
             reducer(state,action:PayloadAction<number>){
-                if (action.payload === 1){
-                    state.len++;
-                }else{
-                    state.len--;
-                }
-                state.arr = randomArray(state.len);
+                state.len = action.payload;
             },
             prepare(payload:number){
                 return {payload};
             },
         },
-        empty:state =>{
-            if (state.arr.length === 0){
-                alert("Stack is empty!");
-            }else{
-                alert("Stack is not empty!");
-            }
-        },
         push:{
             reducer(state,action:PayloadAction<number>){
-                if (state.arr.length === maxLength){
-                    alert("Stack has reached its initial capacity!");
-                    return;
-                }
                 state.arr.push(action.payload);
+                state.len++;
             },
             prepare(payload:number){
                 return {payload};
@@ -387,51 +270,18 @@ export const stackSlice = createSlice({
 
         },
         pop: state=>{
-            if (state.arr.length === 0){
-                alert("Stack is empty");
-                return;
-            }
-            state.val = state.arr.splice(state.arr.length-1,1)[0];
-            setInterval(()=>state.val = null, 500);
+            state.arr.splice(state.arr.length-1,1);
+            state.len--;
         },
-        peek: state=>{
-            if (state.arr.length === 0){
-                alert("Stack is empty");
-                return;
-            }
-            state.val = state.arr.splice(state.arr.length-1,1)[0];
-            setInterval(()=>state.val = null, 500);
-        },
-        contains:{
-            reducer(state,action:PayloadAction<number>){
-                if (state.arr.includes(action.payload)){
-                    alert("Stack contains the element !");
-                }else{
-                    alert("Stack doesn't contain the element !");
-                }
+        transform:{
+            reducer(state,action:PayloadAction<number[]>){
+                state.arr = action.payload;
+                state.len = action.payload.length;
             },
-            prepare(payload:number){
+            prepare(payload:number[]){
                 return {payload};
             },
-        },
-        iterator:{
-            reducer(state,action:PayloadAction<number>){
-                const n = state.arr.length;
-                if (action.payload === 1){
-                    for (let i = n - 1; i >= 0 ; i--){
-                        setInterval(()=>state.idx = i, 100);
-                    }
-                }else{
-                    for (let i = 0; i <= n ; i++){
-                        setInterval(()=>state.idx = i, 100);
-                    }
-                }
-                state.idx = null;
-            },
-            prepare(payload:number){
-                return {payload};
-            },
-        },
+        }
     },
 })
 
@@ -439,16 +289,13 @@ export const {
     reset: arrayReset,
     resize: arrayResize,
     add: arrayAdd,
-    contains: arrayContains,
-    indexOf: arrayIndexOf,
-    lastIndexOf: arrayLastIndexOf,
-    get: arrayGet,
     set: arraySet,
     remove: arrayRemove,
     clear: arrayClear,
     subList: arraySubList,
     sort: arraySort,
     fill: arrayFill,
+    transform:arrayTransform,
 } = arraySlice.actions;
 
 export const {
@@ -458,15 +305,12 @@ export const {
     addLast: linkedListAddLast,
     pollFirst: linkedListPollFirst,
     pollLast: linkedListPollLast,
-    contains: linkedListContains,
-    indexOf: linkedListIndexOf,
-    lastIndexOf: linkedListLastIndexOf,
-    get: linkedListGet,
     set: linkedListSet,
     remove: linkedListRemove,
     clear: linkedListClear,
     sort:linkedListSort,
     insert: linkedListInsert,
+    transform:linkedListTransform
 } = linkedListSlice.actions;
 
 export const {
@@ -474,20 +318,15 @@ export const {
     resize: queueResize,
     add: queueAdd,
     poll:queuePoll,
-    peek: queuePeek,
-    contains: queueContains,
-    iterator: queueIterator,
+    transform:queueTransform
 } = queueSlice.actions;
 
 export const {
     reset: stackReset,
     resize: stackResize,
-    empty: stackEmpty,
     pop:stackPop,
-    peek:stackPeek,
     push:stackPush,
-    contains: stackContains,
-    iterator: stackIterator,
+    transform:stackTransform
 } = stackSlice.actions;
 
 export const arrayReducers ={

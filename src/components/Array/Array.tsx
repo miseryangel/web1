@@ -1,26 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Box, Grid, Button, TextField, ButtonGroup, FormControl, InputLabel, Select, MenuItem } from '@material-ui/core';
+import { Typography, Box, Grid, Button, TextField, ButtonGroup, FormControl, Select, MenuItem } from '@material-ui/core';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { useHistory } from 'react-router-dom';
 import {
-    arrayReset,
-    arrayResize,
-    arrayAdd,
-    arrayContains,
-    arrayIndexOf,
-    arrayLastIndexOf,
-    arrayGet,
-    arraySet,
-    arrayRemove,
-    arrayClear,
-    arraySubList,
-    arraySort,
-    arrayFill
+  arrayReset,
+  arrayResize,
+  arrayAdd,
+  arraySet,
+  arrayRemove,
+  arrayClear,
+  arraySubList,
+  arraySort,
+  arrayFill
+} from '../../slices/Array';
+import {
+  linkedListTransform,
+  queueTransform,
+  stackTransform,
 } from '../../slices/Array';
 import { List } from '../bits/List';
+import { arrayStyles } from '../Styles/arrayStyle';
 
 function ConditionalArrayRenderer(props:{arr:number[],active:number}){
   if (props.arr.length === 0){
-    return <Typography variant="h6" color = "secondary">Array is Empty!</Typography>
+    return (
+      <Box pt = {5} pb={2} >
+      <Typography variant="h6" color = "secondary">Array is Empty!</Typography>
+      </Box>
+      )
   }else{
     return <List arr = {props.arr} active = {props.active}/>
   }
@@ -42,6 +49,9 @@ function Array(){
     const [end,setEnd] = useState(len);
     const [active,setActive] = useState(-1);
     const [on,setOn] = useState(false);
+    const [trans,setTrans] = useState("");
+    const history = useHistory();
+    const classes = arrayStyles();
 
     useEffect(() =>{
       let interval:ReturnType<typeof setInterval>|null = null;
@@ -64,22 +74,59 @@ function Array(){
       setInterval(() => setVisible(false),2000);
     }
 
-    const orderHandler = (event:React.ChangeEvent<{ value: unknown }>) =>{
-      event.target.value === 1? setOrder(1):setOrder(0);
+    const orderHandler = (e:React.ChangeEvent<{value:unknown}>) =>{
+      e.target.value === 1? setOrder(1):setOrder(0);
     }
 
     const iteratorHandler = () =>{
       setOn(true);
       setLen(array.length);
-      order === 0?setActive(0):setActive(len-1);
+      order === 0?setActive(0):setActive(arrLen-1);
+    }
+
+    const transHandler = (e:React.ChangeEvent<{value:unknown}>) =>{
+      const choice = e.target.value as string;
+      setTrans(choice);
+    }
+
+    const maximize = () =>{
+      console.log(trans);
+      switch(trans){
+        case "LinkedList":
+          dispatch(linkedListTransform(array));
+          break;
+        case "Queue":
+          dispatch(queueTransform(array));
+          break;
+        case "Stack":
+          dispatch(stackTransform(array));
+          break;
+      }
+      history.push(`/${trans}`);
     }
 
     return (
-      <Grid container  spacing = {3} justifyContent="center" >
+      <Grid container spacing = {3} justify="center">
         <Grid item xs = {10}>
           <Typography variant="h4">Array</Typography>
           <ConditionalArrayRenderer arr = {array} active = {active} />
           
+        </Grid>
+        <Grid item xs = {10} >
+          <Button variant = "contained" className={classes.transform} onClick= {maximize}>Transform</Button>
+          <Select
+              labelId="trans-label"
+              className="trans-select"
+              value={trans}
+              label="Transformation"
+              autoWidth 
+              type="text"
+              onChange = {transHandler}
+            >
+              <MenuItem value={"LinkedList"}>linkedList</MenuItem>
+              <MenuItem value={"Queue"}>queue</MenuItem>
+              <MenuItem value={"Stack"}>stack</MenuItem>
+            </Select>
         </Grid>
         <Grid item xs = {10} >
 
@@ -108,20 +155,19 @@ function Array(){
               Add
             </Button>
             <Button onClick= {() => {
-              console.log(val);
-              value === -1?msgHandler("Element is not in the array !"):msgHandler("Element is in the array !");
+              array.includes(val)?msgHandler("Element is in the array !"):msgHandler("Element is not in the array !");
             }}>
               Contains
             </Button>
             <Button onClick= {() => {
-              dispatch(arrayIndexOf(val));
-              value === -1?msgHandler("Element is not in the array !"):msgHandler(`The last index of element is ${value} !`);
+              const firstIndex = array.indexOf(val);
+              firstIndex === -1?msgHandler("Element is not in the array !"):msgHandler(`The last index of element is ${firstIndex} !`);
             }}>
               IndexOf
             </Button>
             <Button onClick= {() =>{
-                dispatch(arrayLastIndexOf(val));
-                value === -1?msgHandler("Element is in not array !"):msgHandler(`the first index of element is ${value} !`);
+                const lastIndex = array.lastIndexOf(val);
+                lastIndex === -1?msgHandler("Element is in not array !"):msgHandler(`the first index of element is ${lastIndex} !`);
               }}>
               LastIndexOf
             </Button>
@@ -212,18 +258,15 @@ function Array(){
               if (index < 0 || index >= len){
                 msgHandler("Element is in not array !");
               }else{
-                dispatch(arrayGet(index));
-                msgHandler(`The fetched element is ${value}`);
+                msgHandler(`The fetched element is ${array[index]}`);
               }
             }}>Get</Button>
             <Button onClick= {() => {
-              console.log("val is",val);
-              dispatch(arrayIndexOf(val));
-              console.log(value);
-              if (value === -1){
+              const firstIndex = array.indexOf(val);
+              if (firstIndex === -1){
                 msgHandler("Element is in not array !");
               }else{
-                dispatch(arrayRemove());
+                dispatch(arrayRemove(firstIndex));
               }
             }}>Remove</Button>
             <Button onClick= {() => dispatch(arrayFill(val))}>Fill</Button>
@@ -251,6 +294,7 @@ function Array(){
               value={order}
               label="Order"
               autoWidth 
+              type="number"
               onChange = {orderHandler}
             >
               <MenuItem value={0}>Ascending</MenuItem>

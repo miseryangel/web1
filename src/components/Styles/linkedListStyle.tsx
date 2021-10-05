@@ -1,7 +1,7 @@
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, Theme, createStyles } from "@material-ui/core/styles"; 
 import yellow from "@material-ui/core/colors/yellow";
 
-export const linkedListStyles = makeStyles((theme) => ({
+export const linkedListStyles = makeStyles((theme:Theme) => createStyles({
     root: {
       display: "flex",
       flexWrap: "wrap",
@@ -14,5 +14,11 @@ export const linkedListStyles = makeStyles((theme) => ({
         textAlign: "center",     
         padding: theme.spacing(1)
       }
+    },
+    customBorderRadius: {
+      borderRadius: 25
+    },
+    active:{
+      backgroundColor: yellow[700],
     }
   }));

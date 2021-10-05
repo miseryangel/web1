@@ -1,20 +1,21 @@
 import React from 'react';
 import { Paper, Box } from '@material-ui/core';
-import { arrayStyles } from '../Styles/arrayStyle';
+import { linkedListStyles } from '../Styles/linkedListStyle';
 
-export const List = (props:{arr:number[],active:number}) =>{
-    const classes = arrayStyles();
-    console.log(props.active);
+export const LList = (props:{arr:number[],active:number}) =>{
+    const classes = linkedListStyles();
     const arr = props.arr.map((val,index)=>{
         if (index === props.active){
             return (
                 <Paper color="#ff6600" variant="outlined" className = {classes.active} elevation={24}>{val}</Paper>
             );
         }
-      return (<Paper variant="outlined" square elevation={3}>{val}</Paper>);
+      return (
+        <Paper variant="outlined" className = {classes.customBorderRadius} elevation={3}>{val}</Paper>
+      );
     });
     return (
-        <Box pt = {5} pb={2} width = "94.6%" >
+        <Box p = {10} pt ={5} width = "94.6%" >
             <div className={classes.root}>
                 {arr}
             </div>

@@ -1,6 +1,8 @@
 import React,{ useState, useEffect } from 'react';
 import { Grid, Typography, ButtonGroup, Box, FormControl, MenuItem, Select, Button, TextField } from '@material-ui/core';
 import {useAppDispatch, useAppSelector} from '../../app/hooks';
+import { useHistory } from 'react-router-dom';
+import { arrayStyles } from '../Styles/arrayStyle';
 import {
     linkedListReset,
     linkedListResize,
@@ -8,23 +10,24 @@ import {
     linkedListAddLast,
     linkedListPollFirst,
     linkedListPollLast,
-    linkedListContains,
-    linkedListIndexOf,
-    linkedListLastIndexOf,
-    linkedListGet,
     linkedListSet,
     linkedListRemove,
     linkedListClear,
     linkedListSort,
     linkedListInsert
 } from '../../slices/Array';
-import {List} from '../bits/List';
+import {
+  arrayTransform,
+  queueTransform,
+  stackTransform,
+} from '../../slices/Array';
+import {LList} from '../bits/LList';
 
 function ConditionalLLRenderer(props:{arr:number[],active:number}){
   if (props.arr.length === 0){
     return <Typography variant="h6" color = "secondary">LinkedList is Empty!</Typography>
   }else{
-    return <List arr = {props.arr} active = {props.active}/>
+    return <LList arr = {props.arr} active = {props.active}/>
   }
 } 
 
@@ -32,7 +35,6 @@ function LinkedList(){
     const dispatch = useAppDispatch();
     const linkedList = useAppSelector(state => state.linkedList.arr);
     const llLen = useAppSelector(state => state.linkedList.len);
-    const value = useAppSelector(state => state.linkedList.val);
     const [val,setVal] = useState(0);
     const [len,setLen] = useState(llLen);
     const [msg,setMsg] = useState<String>("");
@@ -41,6 +43,9 @@ function LinkedList(){
     const [order,setOrder] = useState(0);
     const [active,setActive] = useState(-1);
     const [on,setOn] = useState(false);
+    const [trans,setTrans] = useState("");
+    const history = useHistory();
+    const classes = arrayStyles();
 
     useEffect(() =>{
       let interval:ReturnType<typeof setInterval>|null = null;
@@ -55,7 +60,7 @@ function LinkedList(){
         clearInterval(interval!);
       }
       return () =>clearInterval(interval!);
-    },[visible,value,on,active,llLen])
+    },[visible,on,active,llLen])
 
     const msgHandler = (message:String) =>{
       setVisible(true);
@@ -64,21 +69,58 @@ function LinkedList(){
       return () =>clearInterval(interval);
     }
 
-    const orderHandler = (event:React.ChangeEvent<{ value: unknown }>) =>{
-      event.target.value === 1? setOrder(1):setOrder(0);
+    const orderHandler = (e:React.ChangeEvent<{value:unknown}>) =>{
+      e.target.value === 1? setOrder(1):setOrder(0);
     }
 
     const iteratorHandler = () =>{
       setOn(true);
       setLen(llLen);
-      order === 0?setActive(0):setActive(len-1);
+      order === 0?setActive(0):setActive(llLen-1);
+    }
+
+    const transHandler = (e:React.ChangeEvent<{value:unknown}>) =>{
+      const choice = e.target.value as string;
+      setTrans(choice);
+    }
+
+    const maximize = () =>{
+      switch(trans){
+        case "Array":
+          dispatch(arrayTransform(linkedList));
+          break;
+        case "Queue":
+          dispatch(queueTransform(linkedList));
+          break;
+        case "Stack":
+          dispatch(stackTransform(linkedList));
+          break;
+      }
+      history.push(`/${trans}`);
     }
     
     return (
-      <Grid container  spacing = {3} justifyContent="center" >
+      <Grid  container spacing={3} justify="center">
         <Grid item xs = {10}>
           <Typography variant="h4">LinkedList</Typography>
           <ConditionalLLRenderer arr = {linkedList} active = {active} />
+        </Grid>
+
+        <Grid item xs = {10} >
+          <Button variant = "contained" className={classes.transform} onClick= {maximize}>Transform</Button>
+          <Select
+              labelId="trans-label"
+              className="trans-select"
+              value={trans}
+              label="Transformation"
+              autoWidth 
+              type="text"
+              onChange = {transHandler}
+            >
+              <MenuItem value={"Array"}>array</MenuItem>
+              <MenuItem value={"Queue"}>queue</MenuItem>
+              <MenuItem value={"Stack"}>stack</MenuItem>
+            </Select>
         </Grid>
 
         <Grid item xs = {10} >
@@ -157,19 +199,17 @@ function LinkedList(){
               AddLast
             </Button>
             <Button onClick= {() => {
-              dispatch(linkedListContains(val));
-              value === -1?msgHandler("Element is not in the linkedList !"):msgHandler("Element is in the linkedList !");
+              linkedList.includes(val)?msgHandler("Element is in the linkedList !"):msgHandler("Element is not in the linkedList !");
             }}>
               Contains
             </Button>
             <Button onClick= {() => {
               console.log("val is",val);
-              dispatch(linkedListIndexOf(val));
-              console.log(value);
-              if (value === -1){
+              const firstIndex = linkedList.indexOf(val);
+              if (firstIndex === -1){
                 msgHandler("Element is in not linkedList !");
               }else{
-                dispatch(linkedListRemove());
+                dispatch(linkedListRemove(firstIndex));
               }
             }}>Remove</Button>
             
@@ -257,8 +297,8 @@ function LinkedList(){
             color="primary"
           >
             <Button onClick= {() => {
-              dispatch(linkedListIndexOf(val));
-              value === -1?msgHandler("Element is in not linkedlist !"):msgHandler(`The last index of element is ${value} !`);
+              const firstIndex = linkedList.indexOf(val);
+              firstIndex === -1?msgHandler("Element is in not linkedlist !"):msgHandler(`The last index of element is ${firstIndex} !`);
             }}>
               IndexOf
             </Button>
@@ -275,8 +315,7 @@ function LinkedList(){
               if (index < 0 || index >= len){
                 msgHandler("Element is in not linkedList !");
               }else{
-                dispatch(linkedListGet(index));
-                msgHandler(`The fetched element is ${value}`);
+                msgHandler(`The fetched element is ${linkedList[index]}`);
               }
             }}>Get</Button>
             
@@ -304,6 +343,7 @@ function LinkedList(){
               value={order}
               label="Order"
               autoWidth 
+              type="number"
               onChange = {orderHandler}
             >
               <MenuItem value={0}>Ascending</MenuItem>

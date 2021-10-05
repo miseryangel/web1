@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { randomArray } from './bricks/arrayGenerator';
-import { mergeStack, stackGenerator, subSort } from './bricks/mergeHelper';
+import {  stackGenerator, subSort } from './bricks/mergeHelper';
 
 const initialLength = 100, maxLength = 200;
 
@@ -15,23 +15,14 @@ export const bubbleSortingSlice = createSlice({
     },
     reducers: {
         reset: state =>{
-            state.arr = randomArray(initialLength);
-            state.len = initialLength;
+            state.arr = randomArray(state.len);
             state.round = 0;
             state.idx = 0;
             state.isOver = false;
         },
         resize:{
             reducer(state,action:PayloadAction<number>){
-                if (action.payload === 1){
-                    state.len++;
-                }else{
-                    state.len--;
-                }
-                state.arr = randomArray(state.len);
-                state.round = 0;
-                state.idx = 0;
-                state.isOver = false;
+                state.len = action.payload
             },
             prepare(payload:number){
                 return {payload};
@@ -111,11 +102,18 @@ export const mergeSortingSlice = createSlice({
 })
 
 export const {
-    reset,
-    resize,
-    forward
+    reset:bubbleReset,
+    resize:bubbleResize,
+    forward:bubbleForward,
 } = bubbleSortingSlice.actions;
+
+export const {
+    reset:mergeReset,
+    resize:mergeResize,
+    forward:mergeForward,
+} = mergeSortingSlice.actions;
 
 export const sortingReducers ={
     bubbleSortingReducer: bubbleSortingSlice.reducer,
+    mergeSortingReducer: mergeSortingSlice.reducer,
 }

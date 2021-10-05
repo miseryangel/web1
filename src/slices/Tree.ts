@@ -14,38 +14,25 @@ const bstSlice = createSlice({
     initialState:{
         tree: new BSTree(),
         visited: new Set<number>(),
-        val:0,
-        found:false,
     },
     reducers:{
-        // only used for height limit then reset curNode
-        reset:(state)=>{
-            state.tree.cur = state.tree.root;
-            state.found = false;
-        },
-        // select value
-        changeVal:{
+        addNode:{
             reducer:(state,action:PayloadAction<number>)=>{
-                state.val = action.payload;
+                state.visited.add(action.payload);
+                state.tree.addNode(action.payload);
             },
             prepare:(payload:number)=>{
                 return {payload};
             }
         },
-        // delegate value down the tree
-        delegate:(state) =>{
-            const sign = state.tree.delegate(state.val);
-            if (sign === 1) state.found = true;
-        },
-        addNode:(state) =>{
-            // add value to the pool
-            state.visited.add(state.val);
-            state.tree.addNode(state.val);
-        },
-        deleteNode:(state) =>{
-            // remove value from the pool
-            state.visited.delete(state.val);
-            state.tree.deleteNode();
+        deleteNode:{
+            reducer:(state,action:PayloadAction<number>)=>{
+                state.visited.delete(action.payload);
+                state.tree.deleteNode(action.payload);
+            },
+            prepare:(payload:number)=>{
+                return {payload};
+            }
         },
     }
 })
@@ -57,35 +44,25 @@ const avlSlice = createSlice({
     initialState:{
         tree: new AVLTree(),
         visited: new Set<number>(),
-        found:false,
-        val:0,
     },
     reducers:{
-        // only used for height limit then reset curNode
-        reset:(state)=>{
-            state.tree.cur = state.tree.root;
-            state.found = false;
-        },
-        changeVal:{
-            reducer(state,action:PayloadAction<number>){
-                state.val = action.payload;
+        addNode:{
+            reducer:(state,action:PayloadAction<number>)=>{
+                state.visited.add(action.payload);
+                state.tree.addNode(action.payload);
             },
-            prepare(payload:number){
+            prepare:(payload:number)=>{
                 return {payload};
             }
         },
-        delegate:(state) =>{
-            const sign = state.tree.delegate(state.val);
-            if (sign === 1) state.found = true;
-        },
-        addNode:(state) =>{
-            state.visited.add(state.val);
-            state.tree.addNode(state.val);
-        },
-        deleteNode:(state) =>{
-            // remove value from the pool
-            state.visited.delete(state.val);
-            state.tree.deleteNode();
+        deleteNode:{
+            reducer:(state,action:PayloadAction<number>)=>{
+                state.visited.delete(action.payload);
+                state.tree.deleteNode(action.payload);
+            },
+            prepare:(payload:number)=>{
+                return {payload};
+            }
         },
     }
 })
@@ -95,33 +72,25 @@ const redBlackSlice = createSlice({
     initialState:{
         tree: new RedBlackTree(),
         visited: new Set<number>(),
-        found:false,
-        val:0,
     },
     reducers:{
-        reset:(state)=>{
-            state.tree.cur = state.tree.root;
-            state.found = false;
-        },
-        changeVal:{
-            reducer(state,action:PayloadAction<number>){
-                state.val = action.payload;
+        addNode:{
+            reducer:(state,action:PayloadAction<number>)=>{
+                state.visited.add(action.payload);
+                state.tree.addNode(action.payload);
             },
-            prepare(payload:number){
+            prepare:(payload:number)=>{
                 return {payload};
             }
         },
-        delegate:(state) =>{
-            const sign = state.tree.delegate(state.val);
-            if (sign === 1) state.found = true;
-        },
-        addNode:(state) =>{
-            state.visited.add(state.val);
-            state.tree.addNode(state.val);
-        },
-        // haven't updated
-        deleteNode:(state) =>{
-            state.tree.deleteNode(state.val);
+        deleteNode:{
+            reducer:(state,action:PayloadAction<number>)=>{
+                state.visited.delete(action.payload);
+                state.tree.deleteNode(action.payload);
+            },
+            prepare:(payload:number)=>{
+                return {payload};
+            }
         },
     }
 })
@@ -272,16 +241,11 @@ const initialLenOfSegmentTree = 10;
 // })
 
 export const{
-    reset,
-    changeVal,
-    delegate,
     addNode,
     deleteNode
 }= bstSlice.actions;
+
 export const{
-    reset:avlReset,
-    changeVal:avlChangeVal,
-    delegate:avlDelegate,
     addNode:avlAddNode,
     deleteNode:avlDeleteNode,
 } = avlSlice.actions;

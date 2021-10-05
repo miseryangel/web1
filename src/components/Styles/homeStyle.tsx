@@ -1,7 +1,7 @@
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from '@material-ui/core/styles';
 import yellow from "@material-ui/core/colors/yellow";
 
-export const useStyles = makeStyles((theme) => ({
+export const useStyles = makeStyles((theme:any) => ({
     root: {
       ...theme.typography.body2,
       margin:theme.spacing(5),

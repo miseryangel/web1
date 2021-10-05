@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import  { arrayReducers }  from '../slices/Array';
 import { treeReducers } from '../slices/Tree';
+import { sortingReducers } from '../slices/dist/Sorting';
 import { logger } from 'redux-logger';
 
 const {
@@ -15,6 +16,11 @@ const {
   avlReducer,
 } = treeReducers;
 
+const {
+  bubbleSortingReducer,
+  mergeSortingReducer,
+} = sortingReducers;
+
 export const store = configureStore({
   reducer: {
     array: arrayReducer,
@@ -23,6 +29,8 @@ export const store = configureStore({
     stack: stackReducer,
     bst: bstReducer,
     avl: avlReducer,
+    bubbleSort: bubbleSortingReducer,
+    mergeSort: mergeSortingReducer,
   },
   middleware:(getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
 });
